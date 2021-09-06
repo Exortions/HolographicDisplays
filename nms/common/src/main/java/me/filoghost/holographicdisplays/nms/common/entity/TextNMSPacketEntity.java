@@ -14,7 +14,7 @@ public interface TextNMSPacketEntity extends NMSPacketEntity {
     double ARMOR_STAND_Y_OFFSET = -0.29;
     double ARMOR_STAND_TEXT_HEIGHT = 0.23;
 
-    void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, String text);
+    void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, String text, PlayerSendFilter filter);
 
     void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, IndividualText individualText);
 

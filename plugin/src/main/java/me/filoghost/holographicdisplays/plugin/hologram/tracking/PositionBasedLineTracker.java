@@ -5,16 +5,16 @@
  */
 package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
-import me.filoghost.holographicdisplays.plugin.hologram.base.BaseHologramLine;
 import me.filoghost.holographicdisplays.common.PositionCoordinates;
+import me.filoghost.holographicdisplays.plugin.hologram.base.BaseHologramLine;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
+import java.util.Collection;
 import java.util.Objects;
 
-abstract class PositionBasedLineTracker<T extends BaseHologramLine> extends LineTracker<T> {
+abstract class PositionBasedLineTracker<T extends BaseHologramLine, U> extends LineTracker<T, U> {
 
     private static final int ENTITY_VIEW_RANGE = 64;
 
@@ -58,12 +58,12 @@ abstract class PositionBasedLineTracker<T extends BaseHologramLine> extends Line
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(NMSPacketList packetList) {
+    protected void addChangesPackets(Collection<Player> recipients) {
         if (positionChanged) {
-            addPositionChangePackets(packetList);
+            addPositionChangePackets(recipients);
         }
     }
 
-    protected abstract void addPositionChangePackets(NMSPacketList packetList);
+    protected abstract void addPositionChangePackets(Collection<Player> recipients);
 
 }

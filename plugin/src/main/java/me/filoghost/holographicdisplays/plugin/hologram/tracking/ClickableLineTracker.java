@@ -13,7 +13,7 @@ import me.filoghost.holographicdisplays.plugin.hologram.base.BaseClickableHologr
 import me.filoghost.holographicdisplays.plugin.listener.LineClickListener;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
-public abstract class ClickableLineTracker<T extends BaseClickableHologramLine> extends PositionBasedLineTracker<T> {
+public abstract class ClickableLineTracker<T extends BaseClickableHologramLine, U> extends PositionBasedLineTracker<T, U> {
 
     private final ClickableNMSPacketEntity clickableEntity;
     private final double positionOffsetY;

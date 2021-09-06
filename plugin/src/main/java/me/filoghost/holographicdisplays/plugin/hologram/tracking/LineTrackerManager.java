@@ -22,7 +22,7 @@ public class LineTrackerManager {
     private final NMSManager nmsManager;
     private final PlaceholderTracker placeholderTracker;
     private final LineClickListener lineClickListener;
-    private final Collection<LineTracker<?>> lineTrackers;
+    private final Collection<LineTracker<?, ?>> lineTrackers;
 
     public LineTrackerManager(NMSManager nmsManager, PlaceholderTracker placeholderTracker, LineClickListener lineClickListener) {
         this.nmsManager = nmsManager;
@@ -46,9 +46,9 @@ public class LineTrackerManager {
     public void update() {
         Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
-        Iterator<LineTracker<?>> iterator = lineTrackers.iterator();
+        Iterator<LineTracker<?, ?>> iterator = lineTrackers.iterator();
         while (iterator.hasNext()) {
-            LineTracker<?> lineTracker = iterator.next();
+            LineTracker<?, ?> lineTracker = iterator.next();
 
             // Remove deleted trackers
             if (lineTracker.shouldBeRemoved()) {
@@ -62,13 +62,13 @@ public class LineTrackerManager {
     }
 
     public void clearTrackedPlayersAndSendPackets() {
-        for (LineTracker<?> tracker : lineTrackers) {
+        for (LineTracker<?, ?> tracker : lineTrackers) {
             tracker.clearTrackedPlayersAndSendPackets();
         }
     }
 
     public void onPlayerQuit(Player player) {
-        for (LineTracker<?> tracker : lineTrackers) {
+        for (LineTracker<?, ?> tracker : lineTrackers) {
             tracker.removeTrackedPlayer(player);
         }
     }

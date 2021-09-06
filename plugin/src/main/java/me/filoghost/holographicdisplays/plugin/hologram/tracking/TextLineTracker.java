@@ -6,16 +6,18 @@
 package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
 import me.filoghost.holographicdisplays.nms.common.NMSManager;
+import me.filoghost.holographicdisplays.nms.common.NMSPacket;
 import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
 import me.filoghost.holographicdisplays.nms.common.entity.TextNMSPacketEntity;
 import me.filoghost.holographicdisplays.plugin.hologram.base.BaseTextHologramLine;
 import me.filoghost.holographicdisplays.plugin.listener.LineClickListener;
 import me.filoghost.holographicdisplays.plugin.placeholder.tracking.PlaceholderTracker;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import java.util.Objects;
 
-public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine> {
+public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, MutableString> {
 
     private final TextNMSPacketEntity textEntity;
 
@@ -44,6 +46,11 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine> 
             displayTextChanged = true; // Mark as changed to trigger a packet send with updated placeholders
         }
         return placeholdersChanged;
+    }
+
+    @Override
+    protected MutableString createTrackedPlayerData(Player player) {
+        return new MutableString();
     }
 
     @MustBeInvokedByOverriders
@@ -77,39 +84,59 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine> 
         super.addSpawnPackets(packetList);
 
         if (!allowPlaceholders) {
-            textEntity.addSpawnPackets(packetList, position, displayText.getWithoutReplacements());
+            String text = displayText.getWithoutReplacements();
+            textEntity.addSpawnPackets(packetList, position, text, (player, sentText) -> {
+                getTrackedPlayerData(player).set(sentText);
+                return true;
+            });
         } else if (displayText.containsIndividualPlaceholders()) {
-            textEntity.addSpawnPackets(packetList, position, displayText::getWithIndividualReplacements);
+            textEntity.addSpawnPackets(packetList, position, player -> {
+                MutableString lastSeenText = getTrackedPlayerData(player);
+                String text = displayText.getWithIndividualReplacements(player);
+                lastSeenText.set(text);
+                return text;
+            });
         } else {
-            textEntity.addSpawnPackets(packetList, position, displayText.getWithGlobalReplacements());
-        }
-    }
-
-    @MustBeInvokedByOverriders
-    @Override
-    protected void addDestroyPackets(NMSPacketList packetList) {
-        super.addDestroyPackets(packetList);
-        textEntity.addDestroyPackets(packetList);
-    }
-
-    @Override
-    protected void addChangesPackets(NMSPacketList packetList) {
-        super.addChangesPackets(packetList);
-
-        if (displayTextChanged) {
-            if (!allowPlaceholders) {
-                textEntity.addChangePackets(packetList, displayText.getWithoutReplacements());
-            } else if (displayText.containsIndividualPlaceholders()) {
-                textEntity.addChangePackets(packetList, displayText::getWithIndividualReplacements);
-            } else {
-                textEntity.addChangePackets(packetList, displayText.getWithGlobalReplacements());
+            String text = displayText.getWithGlobalReplacements();
+            textEntity.addSpawnPackets(packetList, position, text);
+            for (MutableString lastSeenText : getTrackedPlayersData()) {
+                lastSeenText.set(text);
             }
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addPositionChangePackets(NMSPacketList packetList) {
+    protected void addDestroyPackets(Recipients recipients) {
+        super.addDestroyPackets(recipients);
+        textEntity.addDestroyPackets(packetList);
+    }
+
+    @Override
+    protected void addChangesPackets(Recipients recipients) {
+        super.addChangesPackets(recipients);
+
+        if (displayTextChanged) {
+            if (!allowPlaceholders) {
+                String text = displayText.getWithoutReplacements();
+                NMSPacket packet = textEntity.getChangePacket(text);
+                for (Player player : recipients) {
+                    packet.sendTo(player);
+                    getTrackedPlayerData(player).set(text);
+                }
+            } else if (displayText.containsIndividualPlaceholders()) {
+                recipients.addIndividual(player -> {
+                    textEntity.getChangePacket(displayText.getWithIndividualReplacements(player));
+                });
+            } else {
+                recipients.addGlobal(textEntity.getChangePacket(displayText.getWithGlobalReplacements());
+            }
+        }
+    }
+
+    @MustBeInvokedByOverriders
+    @Override
+    protected void addPositionChangePackets(Recipients recipients) {
         super.addPositionChangePackets(packetList);
         textEntity.addTeleportPackets(packetList, position);
     }

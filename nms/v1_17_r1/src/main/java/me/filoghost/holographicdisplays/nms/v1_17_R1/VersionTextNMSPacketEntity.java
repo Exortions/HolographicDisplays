@@ -10,6 +10,7 @@ import me.filoghost.holographicdisplays.nms.common.EntityID;
 import me.filoghost.holographicdisplays.nms.common.IndividualNMSPacket;
 import me.filoghost.holographicdisplays.nms.common.IndividualText;
 import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
+import me.filoghost.holographicdisplays.nms.common.entity.PlayerSendFilter;
 import me.filoghost.holographicdisplays.nms.common.entity.TextNMSPacketEntity;
 
 class VersionTextNMSPacketEntity implements TextNMSPacketEntity {
@@ -21,13 +22,16 @@ class VersionTextNMSPacketEntity implements TextNMSPacketEntity {
     }
 
     @Override
-    public void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, String text) {
+    public void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, String text, PlayerSendFilter filter) {
         packetList.add(new EntityLivingSpawnNMSPacket(armorStandID, EntityTypeID.ARMOR_STAND, position, ARMOR_STAND_Y_OFFSET));
-        packetList.add(EntityMetadataNMSPacket.builder(armorStandID)
+        EntityMetadataNMSPacket metadataPacket = EntityMetadataNMSPacket.builder(armorStandID)
                 .setArmorStandMarker()
                 .setCustomName(text)
-                .build()
-        );
+                .build();
+        packetList.add(new IndividualNMSPacket(player -> {
+            filter.shouldReceivePacket(player, text);
+            return metadataPacket;
+        }));
     }
 
     @Override

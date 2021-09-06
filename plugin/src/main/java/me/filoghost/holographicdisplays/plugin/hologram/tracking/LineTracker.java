@@ -11,13 +11,14 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-public abstract class LineTracker<T extends BaseHologramLine> {
+public abstract class LineTracker<T extends BaseHologramLine, U> {
 
     protected final T line;
-    private final Set<Player> trackedPlayers;
+    private final Map<Player, U> trackedPlayers;
 
     /**
      * Flag to indicate that the line has changed in some way and there could be the need to send update packets.
@@ -26,7 +27,7 @@ public abstract class LineTracker<T extends BaseHologramLine> {
 
     LineTracker(T line) {
         this.line = line;
-        this.trackedPlayers = new HashSet<>();
+        this.trackedPlayers = new HashMap<>();
     }
 
     final boolean shouldBeRemoved() {
@@ -60,9 +61,7 @@ public abstract class LineTracker<T extends BaseHologramLine> {
         // Then, send the changes (if any) to already tracked players
         if (sendChangesPackets) {
             if (hasTrackedPlayers()) {
-                NMSPacketList packetList = new NMSPacketList();
-                addChangesPackets(packetList);
-                broadcastPackets(packetList);
+                addChangesPackets(getTrackedPlayers());
             }
             clearDetectedChanges();
         }
@@ -89,7 +88,8 @@ public abstract class LineTracker<T extends BaseHologramLine> {
 
         for (Player player : onlinePlayers) {
             if (shouldTrackPlayer(player)) {
-                if (trackedPlayers.add(player)) {
+                if (!trackedPlayers.containsKey(player)) {
+                    trackedPlayers.put(player, createTrackedPlayerData(player));
                     if (spawnPacketList == null) {
                         spawnPacketList = new NMSPacketList();
                         addSpawnPackets(spawnPacketList);
@@ -97,7 +97,8 @@ public abstract class LineTracker<T extends BaseHologramLine> {
                     spawnPacketList.sendTo(player);
                 }
             } else {
-                if (trackedPlayers.remove(player)) {
+                if (trackedPlayers.containsKey(player)) {
+                    trackedPlayers.remove(player);
                     if (destroyPacketList == null) {
                         destroyPacketList = new NMSPacketList();
                         addDestroyPackets(destroyPacketList);
@@ -108,6 +109,8 @@ public abstract class LineTracker<T extends BaseHologramLine> {
         }
     }
 
+    protected abstract U createTrackedPlayerData(Player player);
+
     protected abstract boolean shouldTrackPlayer(Player player);
 
     protected final boolean hasTrackedPlayers() {
@@ -115,11 +118,19 @@ public abstract class LineTracker<T extends BaseHologramLine> {
     }
 
     protected final Set<Player> getTrackedPlayers() {
-        return trackedPlayers;
+        return trackedPlayers.keySet();
+    }
+
+    protected final Collection<U> getTrackedPlayersData() {
+        return trackedPlayers.values();
+    }
+
+    protected final U getTrackedPlayerData(Player player) {
+        return trackedPlayers.get(player);
     }
 
     public final boolean isTrackedPlayer(Player player) {
-        return trackedPlayers.contains(player);
+        return trackedPlayers.containsKey(player);
     }
 
     protected final void removeTrackedPlayer(Player player) {
@@ -138,15 +149,15 @@ public abstract class LineTracker<T extends BaseHologramLine> {
     }
 
     private void broadcastPackets(NMSPacketList packetList) {
-        for (Player trackedPlayer : trackedPlayers) {
+        for (Player trackedPlayer : trackedPlayers.keySet()) {
             packetList.sendTo(trackedPlayer);
         }
     }
 
-    protected abstract void addSpawnPackets(NMSPacketList packetList);
+    protected abstract void addSpawnPackets(Recipients recipients);
 
-    protected abstract void addDestroyPackets(NMSPacketList packetList);
+    protected abstract void addDestroyPackets(Recipients recipients);
 
-    protected abstract void addChangesPackets(NMSPacketList packetList);
+    protected abstract void addChangesPackets(Recipients recipients);
 
 }
