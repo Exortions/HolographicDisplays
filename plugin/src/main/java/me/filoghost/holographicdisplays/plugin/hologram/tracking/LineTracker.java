@@ -90,6 +90,7 @@ public abstract class LineTracker<T extends BaseHologramLine> {
         for (Player player : onlinePlayers) {
             if (shouldTrackPlayer(player)) {
                 if (trackedPlayers.add(player)) {
+                    onTrackedPlayerAdded(player);
                     if (spawnPacketList == null) {
                         spawnPacketList = new NMSPacketList();
                         addSpawnPackets(spawnPacketList);
@@ -98,6 +99,7 @@ public abstract class LineTracker<T extends BaseHologramLine> {
                 }
             } else {
                 if (trackedPlayers.remove(player)) {
+                    onTrackedPlayerRemove(player);
                     if (destroyPacketList == null) {
                         destroyPacketList = new NMSPacketList();
                         addDestroyPackets(destroyPacketList);

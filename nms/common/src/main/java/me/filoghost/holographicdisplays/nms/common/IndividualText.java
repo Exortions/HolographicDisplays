@@ -6,10 +6,11 @@
 package me.filoghost.holographicdisplays.nms.common;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface
 public interface IndividualText {
 
-    String get(Player player);
+    String get(@NotNull Player player);
 
 }

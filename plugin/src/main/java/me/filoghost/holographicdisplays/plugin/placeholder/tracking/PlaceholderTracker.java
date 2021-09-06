@@ -64,14 +64,10 @@ public class PlaceholderTracker {
         return updateAndGetReplacement(placeholderOccurrence, player, true);
     }
 
-    private @Nullable String updateAndGetReplacement(PlaceholderOccurrence placeholderOccurrence, Player player, boolean individual) {
+    public @Nullable String updateAndGetReplacement(PlaceholderOccurrence placeholderOccurrence, Player player) {
         try {
             TrackedPlaceholder trackedPlaceholder = getTrackedPlaceholder(placeholderOccurrence);
-            if (trackedPlaceholder.isIndividual() == individual) {
-                return trackedPlaceholder.updateAndGetReplacement(player, tickClock.getCurrentTick());
-            } else {
-                return null;
-            }
+            return trackedPlaceholder.updateAndGetReplacement(player, tickClock.getCurrentTick());
         } catch (PlaceholderException e) {
             exceptionHandler.handle(e);
             return "[Error]";
