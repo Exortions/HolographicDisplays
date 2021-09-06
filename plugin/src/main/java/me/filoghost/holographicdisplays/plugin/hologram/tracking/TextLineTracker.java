@@ -39,7 +39,7 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine> 
             return false;
         }
 
-        boolean placeholdersChanged = displayText.updateReplacements();
+        boolean placeholdersChanged = displayText.updateReplacements(getTrackedPlayers());
         if (placeholdersChanged) {
             displayTextChanged = true; // Mark as changed to trigger a packet send with updated placeholders
         }

@@ -11,6 +11,6 @@ import org.jetbrains.annotations.NotNull;
 @FunctionalInterface
 public interface IndividualText {
 
-    String get(@NotNull Player player);
+    @NotNull String get(@NotNull Player player);
 
 }

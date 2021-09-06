@@ -21,52 +21,59 @@ import java.util.Set;
 class DisplayText {
 
     private final PlaceholderTracker placeholderTracker;
-    private @NotNull StringWithPlaceholders textWithoutReplacements;
+
+    private @Nullable StringWithPlaceholders textWithoutReplacements;
     private @Nullable String textWithGlobalReplacements;
     private @Nullable Map<Player, String> textWithIndividualReplacementsByPlayer;
     private boolean containsPlaceholderAPIPattern;
 
     DisplayText(PlaceholderTracker placeholderTracker) {
         this.placeholderTracker = placeholderTracker;
-        this.textWithoutReplacements = StringWithPlaceholders.of(null);
-        this.textWithGlobalReplacements = null;
-        this.textWithIndividualReplacementsByPlayer = null;
+    }
+
+    boolean containsIndividualPlaceholders() {
+        if (textWithoutReplacements == null) {
+            return false;
+        }
+        return containsPlaceholderAPIPattern || placeholderTracker.containsIndividualPlaceholders(textWithoutReplacements);
     }
 
     void setWithoutReplacements(@Nullable String textString) {
-        textWithoutReplacements = StringWithPlaceholders.of(textString);
+        textWithoutReplacements = StringWithPlaceholders.ofOrNull(textString);
         textWithGlobalReplacements = null;
         textWithIndividualReplacementsByPlayer = null;
-        containsPlaceholderAPIPattern = textWithoutReplacements.anyLiteralPartMatch(PlaceholderAPIHook::containsPlaceholderPattern);
+        containsPlaceholderAPIPattern = textWithoutReplacements != null
+                && textWithoutReplacements.anyLiteralPartMatch(PlaceholderAPIHook::containsPlaceholderPattern);
     }
 
-    String getWithoutReplacements() {
+    @Nullable String getWithoutReplacements() {
+        if (textWithoutReplacements == null) {
+            return null;
+        }
         return textWithoutReplacements.getString();
     }
 
-    String getWithGlobalReplacements() {
-        return textWithGlobalReplacements.getString();
+    @Nullable String getWithGlobalReplacements() {
+        if (textWithGlobalReplacements == null) {
+            return null;
+        }
+        return textWithGlobalReplacements;
     }
 
-    String getWithIndividualReplacements(Player player) {
-        return textWithGlobalReplacements.replaceParts(
-                (PlaceholderOccurrence placeholderOccurrence) -> {
-                    return placeholderTracker.updateAndGetIndividualReplacement(placeholderOccurrence, player);
-                },
-                (String literalPart) -> {
-                    if (containsPlaceholderAPIPattern
-                            && PlaceholderAPIHook.isEnabled()
-                            && PlaceholderAPIHook.containsPlaceholderPattern(literalPart)) {
-                        return PlaceholderAPIHook.replacePlaceholders(player, literalPart);
-                    } else {
-                        return literalPart;
-                    }
-                }
-        );
+    @NotNull String getWithIndividualReplacements(Player player) {
+        if (textWithIndividualReplacementsByPlayer == null) {
+            throw new IllegalStateException();
+        }
+        String textWithIndividualReplacements = textWithIndividualReplacementsByPlayer.get(player);
+        if (textWithIndividualReplacements == null) {
+            textWithIndividualReplacements = computeTextWithIndividualReplacements(player);
+            textWithIndividualReplacementsByPlayer.put(player, textWithIndividualReplacements);
+        }
+        return textWithIndividualReplacements;
     }
 
     public boolean updateReplacements(Set<Player> players) {
-        if (!textWithoutReplacements.containsUnreplacedPlaceholders()) {
+        if (textWithoutReplacements == null || !textWithoutReplacements.containsPlaceholders()) {
             return false;
         }
 
@@ -77,28 +84,16 @@ class DisplayText {
                 textWithIndividualReplacementsByPlayer = new HashMap<>();
             }
             for (Player player : players) {
-                String textWithIndividualReplacements = textWithoutReplacements.replaceParts(
-                        (PlaceholderOccurrence placeholderOccurrence) -> {
-                            return placeholderTracker.updateAndGetReplacement(placeholderOccurrence, player);
-                        },
-                        (String literalPart) -> {
-                            if (containsPlaceholderAPIPattern
-                                    && PlaceholderAPIHook.isEnabled()
-                                    && PlaceholderAPIHook.containsPlaceholderPattern(literalPart)) {
-                                return PlaceholderAPIHook.replacePlaceholders(player, literalPart);
-                            } else {
-                                return literalPart;
-                            }
-                        });
+                String textWithIndividualReplacements = computeTextWithIndividualReplacements(player);
                 String previousValue = textWithIndividualReplacementsByPlayer.put(player, textWithIndividualReplacements);
                 if (!Objects.equals(textWithIndividualReplacements, previousValue)) {
                     changed = true;
                 }
             }
+            textWithIndividualReplacementsByPlayer.keySet().retainAll(players);
         } else {
             String previousValue = textWithGlobalReplacements;
-            textWithGlobalReplacements = textWithoutReplacements.replacePlaceholders(
-                    placeholderTracker::updateAndGetGlobalReplacement);
+            textWithGlobalReplacements = computeTextWithGlobalReplacements();
             if (!Objects.equals(textWithGlobalReplacements, previousValue)) {
                 changed = true;
             }
@@ -107,8 +102,24 @@ class DisplayText {
         return changed;
     }
 
-    boolean containsIndividualPlaceholders() {
-        return containsPlaceholderAPIPattern || placeholderTracker.containsIndividualPlaceholders(textWithoutReplacements);
+    private @NotNull String computeTextWithGlobalReplacements() {
+        return textWithoutReplacements.replacePlaceholders(placeholderTracker::updateAndGetGlobalReplacement);
+    }
+
+    private @NotNull String computeTextWithIndividualReplacements(Player player) {
+        return textWithoutReplacements.replaceParts(
+                (PlaceholderOccurrence placeholderOccurrence) -> {
+                    return placeholderTracker.updateAndGetReplacement(placeholderOccurrence, player);
+                },
+                (String literalPart) -> {
+                    if (containsPlaceholderAPIPattern
+                            && PlaceholderAPIHook.isEnabled()
+                            && PlaceholderAPIHook.containsPlaceholderPattern(literalPart)) {
+                        return PlaceholderAPIHook.replacePlaceholders(player, literalPart);
+                    } else {
+                        return literalPart;
+                    }
+                });
     }
 
 }
