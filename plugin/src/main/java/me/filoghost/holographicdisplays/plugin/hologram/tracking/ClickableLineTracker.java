@@ -7,7 +7,6 @@ package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
 import me.filoghost.holographicdisplays.common.PositionCoordinates;
 import me.filoghost.holographicdisplays.nms.common.NMSManager;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
 import me.filoghost.holographicdisplays.nms.common.entity.ClickableNMSPacketEntity;
 import me.filoghost.holographicdisplays.plugin.hologram.base.BaseClickableHologramLine;
 import me.filoghost.holographicdisplays.plugin.listener.LineClickListener;
@@ -62,39 +61,39 @@ public abstract class ClickableLineTracker<T extends BaseClickableHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addSpawnPackets(Recipients recipients) {
+    protected void sendSpawnPackets(Recipients recipients) {
         if (spawnClickableEntity) {
-            clickableEntity.addSpawnPackets(packetList, getClickableEntityPosition());
+            recipients.send(clickableEntity.newSpawnPackets(getClickableEntityPosition()));
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addDestroyPackets(Recipients recipients) {
+    protected void sendDestroyPackets(Recipients recipients) {
         if (spawnClickableEntity) {
-            clickableEntity.addDestroyPackets(packetList);
+            recipients.send(clickableEntity.newDestroyPackets());
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(Recipients recipients) {
-        super.addChangesPackets(recipients);
+    protected void sendChangesPackets(Recipients recipients) {
+        super.sendChangesPackets(recipients);
 
         if (spawnClickableEntityChanged) {
             if (spawnClickableEntity) {
-                clickableEntity.addSpawnPackets(packetList, getClickableEntityPosition());
+                recipients.send(clickableEntity.newSpawnPackets(getClickableEntityPosition()));
             } else {
-                clickableEntity.addDestroyPackets(packetList);
+                recipients.send(clickableEntity.newDestroyPackets());
             }
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addPositionChangePackets(Recipients recipients) {
+    protected void sendPositionChangePackets(Recipients recipients) {
         if (spawnClickableEntity) {
-            clickableEntity.addTeleportPackets(packetList, getClickableEntityPosition());
+            recipients.send(clickableEntity.newTeleportPackets(getClickableEntityPosition()));
         }
     }
 

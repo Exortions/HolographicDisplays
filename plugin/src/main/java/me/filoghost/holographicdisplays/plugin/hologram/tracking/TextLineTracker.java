@@ -5,9 +5,9 @@
  */
 package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
+import me.filoghost.holographicdisplays.nms.common.IndividualNetworkSendable;
 import me.filoghost.holographicdisplays.nms.common.NMSManager;
-import me.filoghost.holographicdisplays.nms.common.NMSPacket;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
+import me.filoghost.holographicdisplays.nms.common.NetworkSendable;
 import me.filoghost.holographicdisplays.nms.common.entity.TextNMSPacketEntity;
 import me.filoghost.holographicdisplays.plugin.hologram.base.BaseTextHologramLine;
 import me.filoghost.holographicdisplays.plugin.listener.LineClickListener;
@@ -80,68 +80,75 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addSpawnPackets(NMSPacketList packetList) {
-        super.addSpawnPackets(packetList);
+    protected void sendSpawnPackets(Recipients recipients) {
+        super.sendSpawnPackets(recipients);
 
         if (!allowPlaceholders) {
             String text = displayText.getWithoutReplacements();
-            textEntity.addSpawnPackets(packetList, position, text, (player, sentText) -> {
-                getTrackedPlayerData(player).set(sentText);
-                return true;
-            });
+            NetworkSendable spawnPackets = textEntity.newSpawnPackets(position, text);
+            for (Player recipient : recipients) {
+                spawnPackets.sendTo(recipient);
+                getTrackedPlayerData(recipient).set(text);
+            }
         } else if (displayText.containsIndividualPlaceholders()) {
-            textEntity.addSpawnPackets(packetList, position, player -> {
-                MutableString lastSeenText = getTrackedPlayerData(player);
-                String text = displayText.getWithIndividualReplacements(player);
-                lastSeenText.set(text);
-                return text;
-            });
+            IndividualNetworkSendable spawnPackets = textEntity.newSpawnPackets(position);
+            for (Player recipient : recipients) {
+                String text = displayText.getWithIndividualReplacements(recipient);
+                spawnPackets.sendTo(recipient, text);
+                getTrackedPlayerData(recipient).set(text);
+            }
         } else {
             String text = displayText.getWithGlobalReplacements();
-            textEntity.addSpawnPackets(packetList, position, text);
-            for (MutableString lastSeenText : getTrackedPlayersData()) {
-                lastSeenText.set(text);
+            NetworkSendable spawnPackets = textEntity.newSpawnPackets(position, text);
+            for (Player recipient : recipients) {
+                spawnPackets.sendTo(recipient);
+                getTrackedPlayerData(recipient).set(text);
             }
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addDestroyPackets(Recipients recipients) {
-        super.addDestroyPackets(recipients);
-        textEntity.addDestroyPackets(packetList);
+    protected void sendDestroyPackets(Recipients recipients) {
+        super.sendDestroyPackets(recipients);
+        recipients.send(textEntity.newDestroyPackets());
     }
 
     @Override
-    protected void addChangesPackets(NMSPacketList packetList) {
-        super.addChangesPackets(recipients);
+    protected void sendChangesPackets(Recipients recipients) {
+        super.sendChangesPackets(recipients);
 
         if (displayTextChanged) {
             if (!allowPlaceholders) {
                 String text = displayText.getWithoutReplacements();
-                NMSPacket packet = textEntity.getChangePacket(text);
-                for (Player player : recipients) {
-                    packet.sendTo(player);
-                    getTrackedPlayerData(player).set(text);
+                NetworkSendable spawnPackets = textEntity.newChangePackets(text);
+                for (Player recipient : recipients) {
+                    spawnPackets.sendTo(recipient);
+                    getTrackedPlayerData(recipient).set(text);
                 }
             } else if (displayText.containsIndividualPlaceholders()) {
-                textEntity.addSpawnPackets(packetList, position, "", (packetRecipient, text) -> {
-
-                });
-                recipients.addIndividual(player -> {
-                    textEntity.getChangePacket(displayText.getWithIndividualReplacements(player));
-                });
+                IndividualNetworkSendable spawnPackets = textEntity.newChangePackets();
+                for (Player recipient : recipients) {
+                    String text = displayText.getWithIndividualReplacements(recipient);
+                    spawnPackets.sendTo(recipient, text);
+                    getTrackedPlayerData(recipient).set(text);
+                }
             } else {
-                recipients.addGlobal(textEntity.getChangePacket(displayText.getWithGlobalReplacements());
+                String text = displayText.getWithGlobalReplacements();
+                NetworkSendable spawnPackets = textEntity.newChangePackets(text);
+                for (Player recipient : recipients) {
+                    spawnPackets.sendTo(recipient);
+                    getTrackedPlayerData(recipient).set(text);
+                }
             }
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addPositionChangePackets(Recipients recipients) {
-        super.addPositionChangePackets(packetList);
-        textEntity.addTeleportPackets(packetList, position);
+    protected void sendPositionChangePackets(Recipients recipients) {
+        super.sendPositionChangePackets(recipients);
+        recipients.send(textEntity.newTeleportPackets(position));
     }
 
 }

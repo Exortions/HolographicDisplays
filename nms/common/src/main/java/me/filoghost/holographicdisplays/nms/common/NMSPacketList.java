@@ -5,11 +5,11 @@
  */
 package me.filoghost.holographicdisplays.nms.common;
 
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class NMSPacketList {
 
@@ -30,17 +30,13 @@ public class NMSPacketList {
         }
     }
 
-    public void addIndividual(Function<PacketRecipient, NMSPacket> packetFactory) {
-        add(new IndividualNMSPacket(packetFactory));
-    }
-
-    public void sendTo(PacketRecipient packetRecipient) {
+    public void sendTo(Player player) {
         if (multiplePackets != null) {
             for (NMSPacket packet : multiplePackets) {
-                packet.sendTo(packetRecipient);
+                packet.sendTo(player);
             }
         } else if (singlePacket != null) {
-            singlePacket.sendTo(packetRecipient);
+            singlePacket.sendTo(player);
         }
     }
 

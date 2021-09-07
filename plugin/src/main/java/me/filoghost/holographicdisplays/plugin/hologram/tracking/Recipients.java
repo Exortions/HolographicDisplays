@@ -5,15 +5,12 @@
  */
 package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
-import me.filoghost.holographicdisplays.nms.common.IndividualNMSPacket;
-import me.filoghost.holographicdisplays.nms.common.NMSPacket;
+import me.filoghost.holographicdisplays.nms.common.NetworkSendable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
 
 public class Recipients implements Iterable<Player> {
 
@@ -23,18 +20,16 @@ public class Recipients implements Iterable<Player> {
         this.recipients = recipients;
     }
 
-    public void addGlobal(NMSPacket packet) {
-        packets.add(packet);
-    }
-
-    public void addIndividual(Function<Player, NMSPacket> packetFactory) {
-        packets.add(new IndividualNMSPacket(packetFactory));
+    public void send(NetworkSendable networkSendable) {
+        for (Player recipient : recipients) {
+            networkSendable.sendTo(recipient); // TODO optimize with forEach
+        }
     }
 
     @NotNull
     @Override
     public Iterator<Player> iterator() {
-        return null;
+        return recipients.iterator();
     }
 
 }

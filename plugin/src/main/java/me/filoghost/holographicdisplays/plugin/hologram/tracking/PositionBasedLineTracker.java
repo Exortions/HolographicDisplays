@@ -57,12 +57,12 @@ abstract class PositionBasedLineTracker<T extends BaseHologramLine, U> extends L
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(Recipients recipients) {
+    protected void sendChangesPackets(Recipients recipients) {
         if (positionChanged) {
-            addPositionChangePackets(recipients);
+            sendPositionChangePackets(recipients);
         }
     }
 
-    protected abstract void addPositionChangePackets(Recipients recipients);
+    protected abstract void sendPositionChangePackets(Recipients recipients);
 
 }

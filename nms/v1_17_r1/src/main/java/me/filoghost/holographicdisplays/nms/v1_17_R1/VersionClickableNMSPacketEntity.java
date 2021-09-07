@@ -7,7 +7,7 @@ package me.filoghost.holographicdisplays.nms.v1_17_R1;
 
 import me.filoghost.holographicdisplays.common.PositionCoordinates;
 import me.filoghost.holographicdisplays.nms.common.EntityID;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
+import me.filoghost.holographicdisplays.nms.common.NetworkSendable;
 import me.filoghost.holographicdisplays.nms.common.entity.ClickableNMSPacketEntity;
 
 public class VersionClickableNMSPacketEntity implements ClickableNMSPacketEntity {
@@ -24,23 +24,23 @@ public class VersionClickableNMSPacketEntity implements ClickableNMSPacketEntity
     }
 
     @Override
-    public void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position) {
-        packetList.add(new EntityLivingSpawnNMSPacket(slimeID, EntityTypeID.SLIME, position, SLIME_Y_OFFSET));
-        packetList.add(EntityMetadataNMSPacket.builder(slimeID)
-                .setInvisible()
-                .setSlimeSmall() // Required for a correct client-side collision box
-                .build()
-        );
+    public NetworkSendable newSpawnPackets(PositionCoordinates position) {
+        return NetworkSendable.group(
+                new EntityLivingSpawnNMSPacket(slimeID, EntityTypeID.SLIME, position, SLIME_Y_OFFSET),
+                EntityMetadataNMSPacket.builder(slimeID)
+                        .setInvisible()
+                        .setSlimeSmall() // Required for a correct client-side collision box
+                        .build());
     }
 
     @Override
-    public void addTeleportPackets(NMSPacketList packetList, PositionCoordinates position) {
-        packetList.add(new EntityTeleportNMSPacket(slimeID, position, SLIME_Y_OFFSET));
+    public NetworkSendable newTeleportPackets(PositionCoordinates position) {
+        return new EntityTeleportNMSPacket(slimeID, position, SLIME_Y_OFFSET);
     }
 
     @Override
-    public void addDestroyPackets(NMSPacketList packetList) {
-        PacketHelper.addDestroyPackets(packetList, slimeID);
+    public NetworkSendable newDestroyPackets() {
+        return PacketHelper.newDestroyPackets(slimeID);
     }
 
 }

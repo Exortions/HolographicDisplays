@@ -6,7 +6,6 @@
 package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
 import me.filoghost.holographicdisplays.nms.common.NMSManager;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
 import me.filoghost.holographicdisplays.nms.common.entity.ItemNMSPacketEntity;
 import me.filoghost.holographicdisplays.plugin.hologram.base.BaseItemHologramLine;
 import me.filoghost.holographicdisplays.plugin.listener.LineClickListener;
@@ -84,48 +83,48 @@ public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addSpawnPackets(Recipients recipients) {
-        super.addSpawnPackets(recipients);
+    protected void sendSpawnPackets(Recipients recipients) {
+        super.sendSpawnPackets(recipients);
 
         if (spawnItemEntity) {
-            itemEntity.addSpawnPackets(packetList, position, itemStack);
+            recipients.send(itemEntity.newSpawnPackets(position, itemStack));
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addDestroyPackets(Recipients recipients) {
-        super.addDestroyPackets(recipients);
+    protected void sendDestroyPackets(Recipients recipients) {
+        super.sendDestroyPackets(recipients);
 
         if (spawnItemEntity) {
-            itemEntity.addDestroyPackets(packetList);
+            recipients.send(itemEntity.newDestroyPackets());
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(Recipients recipients) {
-        super.addChangesPackets(recipients);
+    protected void sendChangesPackets(Recipients recipients) {
+        super.sendChangesPackets(recipients);
 
         if (spawnItemEntityChanged) {
             if (spawnItemEntity) {
-                itemEntity.addSpawnPackets(packetList, position, itemStack);
+                recipients.send(itemEntity.newSpawnPackets(position, itemStack));
             } else {
-                itemEntity.addDestroyPackets(packetList);
+                recipients.send(itemEntity.newDestroyPackets());
             }
         } else if (itemStackChanged) {
             // Only send item changes if full spawn/destroy packets were not sent
-            itemEntity.addChangePackets(packetList, itemStack);
+            recipients.send(itemEntity.newChangePackets(itemStack));
         }
     }
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addPositionChangePackets(Recipients recipients) {
-        super.addPositionChangePackets(recipients);
+    protected void sendPositionChangePackets(Recipients recipients) {
+        super.sendPositionChangePackets(recipients);
 
         if (spawnItemEntity) {
-            itemEntity.addTeleportPackets(packetList, position);
+            recipients.send(itemEntity.newTeleportPackets(position));
         }
     }
 

@@ -7,7 +7,7 @@ package me.filoghost.holographicdisplays.nms.v1_17_R1;
 
 import me.filoghost.holographicdisplays.common.PositionCoordinates;
 import me.filoghost.holographicdisplays.nms.common.EntityID;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
+import me.filoghost.holographicdisplays.nms.common.NetworkSendable;
 import me.filoghost.holographicdisplays.nms.common.entity.ItemNMSPacketEntity;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,36 +22,34 @@ public class VersionItemNMSPacketEntity implements ItemNMSPacketEntity {
     }
 
     @Override
-    public void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, ItemStack itemStack) {
-        packetList.add(new EntityLivingSpawnNMSPacket(vehicleID, EntityTypeID.ARMOR_STAND, position, ITEM_Y_OFFSET));
-        packetList.add(EntityMetadataNMSPacket.builder(vehicleID)
-                .setArmorStandMarker()
-                .build()
-        );
-        packetList.add(new EntitySpawnNMSPacket(itemID, EntityTypeID.ITEM, position, ITEM_Y_OFFSET));
-        packetList.add(EntityMetadataNMSPacket.builder(itemID)
+    public NetworkSendable newSpawnPackets(PositionCoordinates position, ItemStack itemStack) {
+        return NetworkSendable.group(
+                new EntityLivingSpawnNMSPacket(vehicleID, EntityTypeID.ARMOR_STAND, position, ITEM_Y_OFFSET),
+                EntityMetadataNMSPacket.builder(vehicleID)
+                        .setArmorStandMarker()
+                        .build(),
+                new EntitySpawnNMSPacket(itemID, EntityTypeID.ITEM, position, ITEM_Y_OFFSET),
+                EntityMetadataNMSPacket.builder(itemID)
+                        .setItemStack(itemStack)
+                        .build(),
+                new EntityMountNMSPacket(vehicleID, itemID));
+    }
+
+    @Override
+    public NetworkSendable newChangePackets(ItemStack itemStack) {
+        return EntityMetadataNMSPacket.builder(itemID)
                 .setItemStack(itemStack)
-                .build()
-        );
-        packetList.add(new EntityMountNMSPacket(vehicleID, itemID));
+                .build();
     }
 
     @Override
-    public void addChangePackets(NMSPacketList packetList, ItemStack itemStack) {
-        packetList.add(EntityMetadataNMSPacket.builder(itemID)
-                .setItemStack(itemStack)
-                .build()
-        );
+    public NetworkSendable newTeleportPackets(PositionCoordinates position) {
+        return new EntityTeleportNMSPacket(vehicleID, position, ITEM_Y_OFFSET);
     }
 
     @Override
-    public void addTeleportPackets(NMSPacketList packetList, PositionCoordinates position) {
-        packetList.add(new EntityTeleportNMSPacket(vehicleID, position, ITEM_Y_OFFSET));
-    }
-
-    @Override
-    public void addDestroyPackets(NMSPacketList packetList) {
-        PacketHelper.addDestroyPackets(packetList, itemID, vehicleID);
+    public NetworkSendable newDestroyPackets() {
+        return PacketHelper.newDestroyPackets(itemID, vehicleID);
     }
 
 }

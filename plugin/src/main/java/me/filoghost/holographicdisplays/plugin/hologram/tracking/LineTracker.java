@@ -5,7 +5,6 @@
  */
 package me.filoghost.holographicdisplays.plugin.hologram.tracking;
 
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
 import me.filoghost.holographicdisplays.plugin.hologram.base.BaseHologramLine;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -63,7 +62,7 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         // Then, send the changes (if any) to already tracked players
         if (sendChangesPackets) {
             if (hasTrackedPlayers()) {
-                addChangesPackets(new Recipients(getTrackedPlayers()));
+                sendChangesPackets(new Recipients(getTrackedPlayers()));
             }
             clearDetectedChanges();
         }
@@ -109,10 +108,10 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         }
 
         if (addedPlayers != null) {
-            addSpawnPackets(new Recipients(addedPlayers));
+            sendSpawnPackets(new Recipients(addedPlayers));
         }
         if (removedPlayers != null) {
-            addDestroyPackets(new Recipients(removedPlayers));
+            sendDestroyPackets(new Recipients(removedPlayers));
         }
     }
 
@@ -126,10 +125,6 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
 
     protected final Set<Player> getTrackedPlayers() {
         return trackedPlayers.keySet();
-    }
-
-    protected final Collection<U> getTrackedPlayersData() {
-        return trackedPlayers.values();
     }
 
     protected final U getTrackedPlayerData(Player player) {
@@ -149,14 +144,14 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
             return;
         }
 
-        addDestroyPackets(new Recipients(getTrackedPlayers()));
+        sendDestroyPackets(new Recipients(getTrackedPlayers()));
         trackedPlayers.clear();
     }
 
-    protected abstract void addSpawnPackets(Recipients recipients);
+    protected abstract void sendSpawnPackets(Recipients recipients);
 
-    protected abstract void addDestroyPackets(Recipients recipients);
+    protected abstract void sendDestroyPackets(Recipients recipients);
 
-    protected abstract void addChangesPackets(Recipients recipients);
+    protected abstract void sendChangesPackets(Recipients recipients);
 
 }

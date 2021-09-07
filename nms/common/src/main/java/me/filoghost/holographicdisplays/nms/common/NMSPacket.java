@@ -5,8 +5,6 @@
  */
 package me.filoghost.holographicdisplays.nms.common;
 
-public interface NMSPacket {
-
-    void sendTo(PacketRecipient packetRecipient);
+public interface NMSPacket extends NetworkSendable {
 
 }

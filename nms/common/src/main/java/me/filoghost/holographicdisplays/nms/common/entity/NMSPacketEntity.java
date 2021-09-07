@@ -6,12 +6,12 @@
 package me.filoghost.holographicdisplays.nms.common.entity;
 
 import me.filoghost.holographicdisplays.common.PositionCoordinates;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
+import me.filoghost.holographicdisplays.nms.common.NetworkSendable;
 
 public interface NMSPacketEntity {
 
-    void addTeleportPackets(NMSPacketList packetList, PositionCoordinates position);
+    NetworkSendable newTeleportPackets(PositionCoordinates position);
 
-    void addDestroyPackets(NMSPacketList packetList);
+    NetworkSendable newDestroyPackets();
 
 }

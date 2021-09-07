@@ -7,10 +7,8 @@ package me.filoghost.holographicdisplays.nms.v1_17_R1;
 
 import me.filoghost.holographicdisplays.common.PositionCoordinates;
 import me.filoghost.holographicdisplays.nms.common.EntityID;
-import me.filoghost.holographicdisplays.nms.common.IndividualNMSPacket;
-import me.filoghost.holographicdisplays.nms.common.IndividualText;
-import me.filoghost.holographicdisplays.nms.common.NMSPacketList;
-import me.filoghost.holographicdisplays.nms.common.entity.PlayerSendFilter;
+import me.filoghost.holographicdisplays.nms.common.IndividualNetworkSendable;
+import me.filoghost.holographicdisplays.nms.common.NetworkSendable;
 import me.filoghost.holographicdisplays.nms.common.entity.TextNMSPacketEntity;
 
 class VersionTextNMSPacketEntity implements TextNMSPacketEntity {
@@ -22,54 +20,48 @@ class VersionTextNMSPacketEntity implements TextNMSPacketEntity {
     }
 
     @Override
-    public void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, String text, PlayerSendFilter filter) {
-        packetList.add(new EntityLivingSpawnNMSPacket(armorStandID, EntityTypeID.ARMOR_STAND, position, ARMOR_STAND_Y_OFFSET));
-        EntityMetadataNMSPacket metadataPacket = EntityMetadataNMSPacket.builder(armorStandID)
-                .setArmorStandMarker()
-                .setCustomName(text)
-                .build();
-        packetList.add(new IndividualNMSPacket(player -> {
-            filter.shouldReceivePacket(player, text);
-            return metadataPacket;
-        }));
-    }
-
-    @Override
-    public void addSpawnPackets(NMSPacketList packetList, PositionCoordinates position, IndividualText individualText) {
-        packetList.add(new EntityLivingSpawnNMSPacket(armorStandID, EntityTypeID.ARMOR_STAND, position, ARMOR_STAND_Y_OFFSET));
-        packetList.addIndividual(player ->
+    public NetworkSendable newSpawnPackets(PositionCoordinates position, String text) {
+        return NetworkSendable.group(
+                new EntityLivingSpawnNMSPacket(armorStandID, EntityTypeID.ARMOR_STAND, position, ARMOR_STAND_Y_OFFSET),
                 EntityMetadataNMSPacket.builder(armorStandID)
                         .setArmorStandMarker()
-                        .setCustomName(individualText.get(packetRecipient))
-                        .build()
-        ));
+                        .setCustomName(text)
+                        .build());
     }
 
     @Override
-    public void addChangePackets(NMSPacketList packetList, String text) {
-        packetList.add(EntityMetadataNMSPacket.builder(armorStandID)
+    public IndividualNetworkSendable newSpawnPackets(PositionCoordinates position) {
+        return IndividualNetworkSendable.group(
+                new EntityLivingSpawnNMSPacket(armorStandID, EntityTypeID.ARMOR_STAND, position, ARMOR_STAND_Y_OFFSET),
+                (String text) -> EntityMetadataNMSPacket.builder(armorStandID)
+                        .setArmorStandMarker()
+                        .setCustomName(text)
+                        .build());
+    }
+
+    @Override
+    public NetworkSendable newChangePackets(String text) {
+        return EntityMetadataNMSPacket.builder(armorStandID)
                 .setCustomName(text)
-                .build()
-        );
+                .build();
     }
 
     @Override
-    public void addChangePackets(NMSPacketList packetList, IndividualText individualText) {
-        packetList.add(new IndividualNMSPacket(player ->
-                EntityMetadataNMSPacket.builder(armorStandID)
-                        .setCustomName(individualText.get(player))
-                        .build()
-        ));
+    public IndividualNetworkSendable newChangePackets() {
+        return IndividualNetworkSendable.single(
+                (String text) -> EntityMetadataNMSPacket.builder(armorStandID)
+                        .setCustomName(text)
+                        .build());
     }
 
     @Override
-    public void addTeleportPackets(NMSPacketList packetList, PositionCoordinates position) {
-        packetList.add(new EntityTeleportNMSPacket(armorStandID, position, ARMOR_STAND_Y_OFFSET));
+    public NetworkSendable newTeleportPackets(PositionCoordinates position) {
+        return new EntityTeleportNMSPacket(armorStandID, position, ARMOR_STAND_Y_OFFSET);
     }
 
     @Override
-    public void addDestroyPackets(NMSPacketList packetList) {
-        PacketHelper.addDestroyPackets(packetList, armorStandID);
+    public NetworkSendable newDestroyPackets() {
+        return PacketHelper.newDestroyPackets(armorStandID);
     }
 
 }
