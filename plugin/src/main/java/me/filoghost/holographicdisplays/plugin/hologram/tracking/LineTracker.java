@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class LineTracker<T extends BaseHologramLine, U> {
+public abstract class LineTracker<T extends BaseHologramLine, U extends TrackedPlayer> {
 
     protected final T line;
     private final Map<Player, U> trackedPlayers;
@@ -90,7 +90,7 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         for (Player player : onlinePlayers) {
             if (shouldTrackPlayer(player)) {
                 if (!trackedPlayers.containsKey(player)) {
-                    trackedPlayers.put(player, createTrackedPlayerData(player));
+                    trackedPlayers.put(player, createTrackedPlayer(player));
                     if (addedPlayers == null) {
                         addedPlayers = new ArrayList<>();
                     }
@@ -115,7 +115,7 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         }
     }
 
-    protected abstract U createTrackedPlayerData(Player player);
+    protected abstract U createTrackedPlayer(Player player);
 
     protected abstract boolean shouldTrackPlayer(Player player);
 
@@ -127,7 +127,7 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         return trackedPlayers.keySet();
     }
 
-    protected final U getTrackedPlayerData(Player player) {
+    protected final U getTrackedPlayer(Player player) {
         return trackedPlayers.get(player);
     }
 

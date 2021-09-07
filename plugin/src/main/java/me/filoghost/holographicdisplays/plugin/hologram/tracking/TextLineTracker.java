@@ -17,7 +17,7 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import java.util.Objects;
 
-public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, MutableString> {
+public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, TextLineTrackedPlayer> {
 
     private final TextNMSPacketEntity textEntity;
 
@@ -49,8 +49,8 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, 
     }
 
     @Override
-    protected MutableString createTrackedPlayerData(Player player) {
-        return new MutableString();
+    protected TextLineTrackedPlayer createTrackedPlayer(Player player) {
+        return new TextLineTrackedPlayer(player);
     }
 
     @MustBeInvokedByOverriders
@@ -88,21 +88,21 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, 
             NetworkSendable spawnPackets = textEntity.newSpawnPackets(position, text);
             for (Player recipient : recipients) {
                 spawnPackets.sendTo(recipient);
-                getTrackedPlayerData(recipient).set(text);
+                getTrackedPlayer(recipient).setLastSeenText(text);
             }
         } else if (displayText.containsIndividualPlaceholders()) {
             IndividualNetworkSendable spawnPackets = textEntity.newSpawnPackets(position);
             for (Player recipient : recipients) {
                 String text = displayText.getWithIndividualReplacements(recipient);
                 spawnPackets.sendTo(recipient, text);
-                getTrackedPlayerData(recipient).set(text);
+                getTrackedPlayer(recipient).setLastSeenText(text);
             }
         } else {
             String text = displayText.getWithGlobalReplacements();
             NetworkSendable spawnPackets = textEntity.newSpawnPackets(position, text);
             for (Player recipient : recipients) {
                 spawnPackets.sendTo(recipient);
-                getTrackedPlayerData(recipient).set(text);
+                getTrackedPlayer(recipient).setLastSeenText(text);
             }
         }
     }
@@ -124,21 +124,21 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, 
                 NetworkSendable spawnPackets = textEntity.newChangePackets(text);
                 for (Player recipient : recipients) {
                     spawnPackets.sendTo(recipient);
-                    getTrackedPlayerData(recipient).set(text);
+                    getTrackedPlayer(recipient).setLastSeenText(text);
                 }
             } else if (displayText.containsIndividualPlaceholders()) {
                 IndividualNetworkSendable spawnPackets = textEntity.newChangePackets();
                 for (Player recipient : recipients) {
                     String text = displayText.getWithIndividualReplacements(recipient);
                     spawnPackets.sendTo(recipient, text);
-                    getTrackedPlayerData(recipient).set(text);
+                    getTrackedPlayer(recipient).setLastSeenText(text);
                 }
             } else {
                 String text = displayText.getWithGlobalReplacements();
                 NetworkSendable spawnPackets = textEntity.newChangePackets(text);
                 for (Player recipient : recipients) {
                     spawnPackets.sendTo(recipient);
-                    getTrackedPlayerData(recipient).set(text);
+                    getTrackedPlayer(recipient).setLastSeenText(text);
                 }
             }
         }

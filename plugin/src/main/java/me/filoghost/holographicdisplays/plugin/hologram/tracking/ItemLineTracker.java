@@ -16,7 +16,7 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import java.util.Collection;
 import java.util.Objects;
 
-public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, DummyValue> {
+public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, TrackedPlayer> {
 
     private final ItemNMSPacketEntity itemEntity;
 
@@ -51,8 +51,8 @@ public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, 
     }
 
     @Override
-    protected DummyValue createTrackedPlayerData(Player player) {
-        return DummyValue.INSTANCE;
+    protected TrackedPlayer createTrackedPlayer(Player player) {
+        return new TrackedPlayer(player);
     }
 
     @MustBeInvokedByOverriders
