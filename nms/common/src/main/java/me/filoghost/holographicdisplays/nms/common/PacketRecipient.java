@@ -5,8 +5,10 @@
  */
 package me.filoghost.holographicdisplays.nms.common;
 
-public interface NMSPacket {
+import org.bukkit.entity.Player;
 
-    void sendTo(PacketRecipient packetRecipient);
+public interface PacketRecipient {
+
+    Player getPlayer();
 
 }

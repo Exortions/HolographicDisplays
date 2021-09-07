@@ -62,7 +62,7 @@ public abstract class ClickableLineTracker<T extends BaseClickableHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addSpawnPackets(NMSPacketList packetList) {
+    protected void addSpawnPackets(Recipients recipients) {
         if (spawnClickableEntity) {
             clickableEntity.addSpawnPackets(packetList, getClickableEntityPosition());
         }
@@ -70,7 +70,7 @@ public abstract class ClickableLineTracker<T extends BaseClickableHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addDestroyPackets(NMSPacketList packetList) {
+    protected void addDestroyPackets(Recipients recipients) {
         if (spawnClickableEntity) {
             clickableEntity.addDestroyPackets(packetList);
         }
@@ -78,8 +78,8 @@ public abstract class ClickableLineTracker<T extends BaseClickableHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(NMSPacketList packetList) {
-        super.addChangesPackets(packetList);
+    protected void addChangesPackets(Recipients recipients) {
+        super.addChangesPackets(recipients);
 
         if (spawnClickableEntityChanged) {
             if (spawnClickableEntity) {
@@ -92,7 +92,7 @@ public abstract class ClickableLineTracker<T extends BaseClickableHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addPositionChangePackets(NMSPacketList packetList) {
+    protected void addPositionChangePackets(Recipients recipients) {
         if (spawnClickableEntity) {
             clickableEntity.addTeleportPackets(packetList, getClickableEntityPosition());
         }

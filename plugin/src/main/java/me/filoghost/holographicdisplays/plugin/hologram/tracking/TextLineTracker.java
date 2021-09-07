@@ -113,7 +113,7 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, 
     }
 
     @Override
-    protected void addChangesPackets(Recipients recipients) {
+    protected void addChangesPackets(NMSPacketList packetList) {
         super.addChangesPackets(recipients);
 
         if (displayTextChanged) {
@@ -125,6 +125,9 @@ public class TextLineTracker extends ClickableLineTracker<BaseTextHologramLine, 
                     getTrackedPlayerData(player).set(text);
                 }
             } else if (displayText.containsIndividualPlaceholders()) {
+                textEntity.addSpawnPackets(packetList, position, "", (packetRecipient, text) -> {
+
+                });
                 recipients.addIndividual(player -> {
                     textEntity.getChangePacket(displayText.getWithIndividualReplacements(player));
                 });

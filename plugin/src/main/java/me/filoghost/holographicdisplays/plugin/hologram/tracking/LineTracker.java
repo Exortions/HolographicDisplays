@@ -10,8 +10,10 @@ import me.filoghost.holographicdisplays.plugin.hologram.base.BaseHologramLine;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,7 +63,7 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         // Then, send the changes (if any) to already tracked players
         if (sendChangesPackets) {
             if (hasTrackedPlayers()) {
-                addChangesPackets(getTrackedPlayers());
+                addChangesPackets(new Recipients(getTrackedPlayers()));
             }
             clearDetectedChanges();
         }
@@ -83,29 +85,34 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
         }
 
         // Lazy initialization
-        NMSPacketList spawnPacketList = null;
-        NMSPacketList destroyPacketList = null;
+        List<Player> addedPlayers = null;
+        List<Player> removedPlayers = null;
 
         for (Player player : onlinePlayers) {
             if (shouldTrackPlayer(player)) {
                 if (!trackedPlayers.containsKey(player)) {
                     trackedPlayers.put(player, createTrackedPlayerData(player));
-                    if (spawnPacketList == null) {
-                        spawnPacketList = new NMSPacketList();
-                        addSpawnPackets(spawnPacketList);
+                    if (addedPlayers == null) {
+                        addedPlayers = new ArrayList<>();
                     }
-                    spawnPacketList.sendTo(player);
+                    addedPlayers.add(player);
                 }
             } else {
                 if (trackedPlayers.containsKey(player)) {
                     trackedPlayers.remove(player);
-                    if (destroyPacketList == null) {
-                        destroyPacketList = new NMSPacketList();
-                        addDestroyPackets(destroyPacketList);
+                    if (removedPlayers == null) {
+                        removedPlayers = new ArrayList<>();
                     }
-                    destroyPacketList.sendTo(player);
+                    removedPlayers.add(player);
                 }
             }
+        }
+
+        if (addedPlayers != null) {
+            addSpawnPackets(new Recipients(addedPlayers));
+        }
+        if (removedPlayers != null) {
+            addDestroyPackets(new Recipients(removedPlayers));
         }
     }
 
@@ -142,16 +149,8 @@ public abstract class LineTracker<T extends BaseHologramLine, U> {
             return;
         }
 
-        NMSPacketList destroyPacketList = new NMSPacketList();
-        addDestroyPackets(destroyPacketList);
-        broadcastPackets(destroyPacketList);
+        addDestroyPackets(new Recipients(getTrackedPlayers()));
         trackedPlayers.clear();
-    }
-
-    private void broadcastPackets(NMSPacketList packetList) {
-        for (Player trackedPlayer : trackedPlayers.keySet()) {
-            packetList.sendTo(trackedPlayer);
-        }
     }
 
     protected abstract void addSpawnPackets(Recipients recipients);

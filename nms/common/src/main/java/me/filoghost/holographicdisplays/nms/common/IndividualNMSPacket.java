@@ -5,21 +5,19 @@
  */
 package me.filoghost.holographicdisplays.nms.common;
 
-import org.bukkit.entity.Player;
-
 import java.util.function.Function;
 
 public class IndividualNMSPacket implements NMSPacket {
 
-    private final Function<Player, NMSPacket> individualPacketFactory;
+    private final Function<PacketRecipient, NMSPacket> individualPacketFactory;
 
-    public IndividualNMSPacket(Function<Player, NMSPacket> individualPacketFactory) {
+    public IndividualNMSPacket(Function<PacketRecipient, NMSPacket> individualPacketFactory) {
         this.individualPacketFactory = individualPacketFactory;
     }
 
     @Override
-    public void sendTo(Player player) {
-        individualPacketFactory.apply(player).sendTo(player);
+    public void sendTo(PacketRecipient packetRecipient) {
+        individualPacketFactory.apply(packetRecipient).sendTo(packetRecipient);
     }
 
 }

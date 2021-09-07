@@ -84,8 +84,8 @@ public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addSpawnPackets(NMSPacketList packetList) {
-        super.addSpawnPackets(packetList);
+    protected void addSpawnPackets(Recipients recipients) {
+        super.addSpawnPackets(recipients);
 
         if (spawnItemEntity) {
             itemEntity.addSpawnPackets(packetList, position, itemStack);
@@ -94,8 +94,8 @@ public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addDestroyPackets(NMSPacketList packetList) {
-        super.addDestroyPackets(packetList);
+    protected void addDestroyPackets(Recipients recipients) {
+        super.addDestroyPackets(recipients);
 
         if (spawnItemEntity) {
             itemEntity.addDestroyPackets(packetList);
@@ -104,8 +104,8 @@ public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(NMSPacketList packetList) {
-        super.addChangesPackets(packetList);
+    protected void addChangesPackets(Recipients recipients) {
+        super.addChangesPackets(recipients);
 
         if (spawnItemEntityChanged) {
             if (spawnItemEntity) {
@@ -121,8 +121,8 @@ public class ItemLineTracker extends ClickableLineTracker<BaseItemHologramLine, 
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addPositionChangePackets(NMSPacketList packetList) {
-        super.addPositionChangePackets(packetList);
+    protected void addPositionChangePackets(Recipients recipients) {
+        super.addPositionChangePackets(recipients);
 
         if (spawnItemEntity) {
             itemEntity.addTeleportPackets(packetList, position);

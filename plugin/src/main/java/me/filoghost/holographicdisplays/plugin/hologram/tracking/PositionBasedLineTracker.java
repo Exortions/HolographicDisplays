@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
-import java.util.Collection;
 import java.util.Objects;
 
 abstract class PositionBasedLineTracker<T extends BaseHologramLine, U> extends LineTracker<T, U> {
@@ -58,12 +57,12 @@ abstract class PositionBasedLineTracker<T extends BaseHologramLine, U> extends L
 
     @MustBeInvokedByOverriders
     @Override
-    protected void addChangesPackets(Collection<Player> recipients) {
+    protected void addChangesPackets(Recipients recipients) {
         if (positionChanged) {
             addPositionChangePackets(recipients);
         }
     }
 
-    protected abstract void addPositionChangePackets(Collection<Player> recipients);
+    protected abstract void addPositionChangePackets(Recipients recipients);
 
 }

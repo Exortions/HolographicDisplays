@@ -10,13 +10,18 @@ import me.filoghost.holographicdisplays.nms.common.NMSPacket;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
 public class Recipients implements Iterable<Player> {
 
-    private List<NMSPacket> packets;
+    private final Collection<Player> recipients;
+
+    public Recipients(Collection<Player> recipients) {
+        this.recipients = recipients;
+    }
 
     public void addGlobal(NMSPacket packet) {
         packets.add(packet);

@@ -5,10 +5,10 @@
  */
 package me.filoghost.holographicdisplays.nms.common.entity;
 
-import org.bukkit.entity.Player;
+import me.filoghost.holographicdisplays.nms.common.PacketRecipient;
 
 public interface PlayerSendFilter {
 
-    boolean shouldReceivePacket(Player player, String text);
+    boolean shouldReceivePacket(PacketRecipient packetRecipient, String text);
 
 }
